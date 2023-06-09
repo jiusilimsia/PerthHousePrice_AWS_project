@@ -16,6 +16,7 @@ import src.generate_features as gf
 import src.split_data as sd
 import src.aws_utils as aws
 import src.generate_preprocessor as gp
+import src.model_tuning as mt
 
 
 
@@ -100,3 +101,25 @@ if __name__ == "__main__":
     gp.save_preprocessor(fitted_preprocessor, artifacts / "fitted_preprocessor.pkl")
     sd.save_splited_data(X_train_transformed, X_test_transformed, y_train, y_test, data_dir)
     logger.info("Finished splitting the data.")
+
+
+    # Tune the models
+    rf_model, rf_par = mt.random_forest_tuning(X_train_transformed, y_train,config["model_tuning"])
+    xgb_model, xgb_par = mt.xgboost_tuning(X_train_transformed, y_train,config["model_tuning"])
+    lr_model, lr_par = mt.linear_ridge_tuning(X_train_transformed, y_train,config["model_tuning"])
+    metrics_df, best_model, best_model_name, other_models_name = mt.model_comparison(rf_model,
+                                                                                     xgb_model,
+                                                                                     lr_model,
+                                                                                     X_test_transformed,
+                                                                                     y_test, config["model_tuning"])
+    # Save the metrics and models
+    mt.save_metrics(metrics_df, other_dir)
+    best_model_file_name = "best_model_object_"+best_model_name+".pkl"
+    mt.save_model(best_model, artifacts / best_model_file_name)
+    for model_name in other_models_name:
+        if model_name == "Random Forest":
+            mt.save_model(rf_model, artifacts / "rf_model_object.pkl")
+        elif model_name == "XGBoost":
+            mt.save_model(xgb_model, artifacts / "xgb_model_object.pkl")
+        elif model_name == "Linear Ridge":
+            mt.save_model(lr_model, artifacts / "lr_model_object.pkl")
