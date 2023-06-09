@@ -15,6 +15,7 @@ import src.analysis as an
 import src.generate_features as gf
 import src.split_data as sd
 import src.aws_utils as aws
+import src.generate_preprocessor as gp
 
 
 
@@ -91,3 +92,11 @@ if __name__ == "__main__":
     # Save the features dataset in the disk
     gf.save_features(features, data_dir / "house_features.csv")
     logger.info("Finished generating features.")
+    preprocessor = gp.generate_preprocessor(updated_num_cols,updated_cat_cols)
+    logger.info("Finished generating preprocessor.")
+    X_train_transformed, X_test_transformed, y_train, y_test, fitted_preprocessor = sd.split_data(features,
+                                                                                                  preprocessor,
+                                                                                                  config["split_data"])
+    gp.save_preprocessor(fitted_preprocessor, artifacts / "fitted_preprocessor.pkl")
+    sd.save_splited_data(X_train_transformed, X_test_transformed, y_train, y_test, data_dir)
+    logger.info("Finished splitting the data.")
