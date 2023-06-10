@@ -17,6 +17,8 @@ import src.split_data as sd
 import src.aws_utils as aws
 import src.generate_preprocessor as gp
 import src.model_tuning as mt
+import src.model_evaluation as me
+
 
 
 
@@ -123,3 +125,8 @@ if __name__ == "__main__":
             mt.save_model(xgb_model, artifacts / "xgb_model_object.pkl")
         elif model_name == "Linear Ridge":
             mt.save_model(lr_model, artifacts / "lr_model_object.pkl")
+    
+    # Model evaluation
+    model_results = me.evaluate_model(best_model, X_test_transformed, y_test)
+    fig_dict = me.plot_results(model_results)
+    me.save_graphs(fig_dict, other_dir / config["model_evaluation"]["plot_results"]["output_dir"])

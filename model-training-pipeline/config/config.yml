@@ -81,6 +81,16 @@ model_tuning:
   best_model_metric: "root_mean_squared_error"
 
 
+model_evaluation:
+  evaluate_model:
+    output: 'model_evaluation.csv'
+  plot_results:
+    hist_figsize: [20, 8]
+    kde_figsize: [20, 8]
+    scatter_figsize: [20, 8]
+    output_dir: 'plots'
+    
+
 aws:
   upload: True
   bucket_raw: group-3-raw-data
