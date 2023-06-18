@@ -2,6 +2,7 @@ import os
 import logging
 import boto3
 import botocore
+from dataclasses import dataclass
 
 
 logger = logging.getLogger(__name__)
@@ -84,3 +85,70 @@ def download_s3(bucket_name: str, s3_key: str, local_file: str) -> None:
     except botocore.exceptions.BotoCoreError as e:  # catch specific exception
         logger.error("Download failed. Exception: %s", e)
 
+
+@dataclass
+class Message:
+    handle: str
+    body: str
+
+
+def get_messages(
+    queue_url: str,
+    max_messages: int = 1,
+    wait_time_seconds: int = 1,
+) -> list[Message]:
+    """
+    Retrieve a list of messages from an Amazon SQS queue.
+
+    This function uses boto3, the AWS SDK for Python, to retrieve messages
+    from a specified SQS queue. It returns a list of Message objects.
+
+    Parameters:
+        queue_url (str): The URL of the SQS queue from which to retrieve messages.
+        max_messages (int, optional): The maximum number of messages to retrieve. Defaults to 1.
+        wait_time_seconds (int, optional): The duration (in seconds) for which the 
+            call will wait for a message to arrive in the queue before returning. Defaults to 1.
+
+    Returns:
+        list[Message]: A list of Message objects. Each Message object contains 
+        the 'ReceiptHandle' and the 'Body' of the retrieved message. If no message 
+        is available, returns an empty list.
+
+    Exceptions:
+        If a boto3.client("sqs") operation error occurs, it logs the error and returns 
+        an empty list.
+    """
+    sqs = boto3.client("sqs")
+    try:
+        response = sqs.receive_message(
+            QueueUrl=queue_url,
+            MaxNumberOfMessages=max_messages,
+            WaitTimeSeconds=wait_time_seconds,
+        )
+    except botocore.exceptions.ClientError as e:
+        logger.error(e)
+        return []
+    if "Messages" not in response:
+        return []
+    return [Message(m["ReceiptHandle"], m["Body"]) for m in response["Messages"]]
+
+
+def delete_message(queue_url: str, receipt_handle: str):
+    """
+    Deletes a specified message from an Amazon SQS queue.
+
+    This function uses boto3, the AWS SDK for Python, to delete a message 
+    from a specified SQS queue.
+
+    Parameters:
+        queue_url (str): The URL of the SQS queue from which to delete the message.
+        receipt_handle (str): The receipt handle associated with the message to delete. 
+
+    Returns:
+        None
+
+    Note:
+        The receipt_handle is the identifier you must provide to delete the message.
+    """
+    sqs = boto3.client("sqs")
+    sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)

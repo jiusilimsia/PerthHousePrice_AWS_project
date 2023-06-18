@@ -1,6 +1,6 @@
 run_config:
   name: housing-price-project
-  author: Jiusi Li, Yucheng Feng, Xin Shu, Ziqiao Ao
+  author: Ziqiao Ao, Yucheng Feng, Jiusi Li, Xin Shu
   version: default
   description: House price prediction in Perth (located in Western Australia).
   dependencies: requirements.txt
@@ -89,8 +89,14 @@ model_evaluation:
     kde_figsize: [20, 8]
     scatter_figsize: [20, 8]
     output_dir: 'plots'
-    
+
 
 aws:
   upload: True
   bucket_raw: group-3-raw-data
+  bucket_model_artifacts: group-3-models
+  random_forest_model_name: rf_model_object.pkl
+  logistic_regression_model_name: lr_model_object.pkl
+  xgboost_model_name: best_model_object_XGBoost.pkl
+  selected_model_key: best_model_object_XGBoost.pkl
+  selected_preprocessor_key: fitted_preprocessor.pkl
