@@ -1,0 +1,101 @@
+run_config:
+  name: housing-price-project
+  author: Jiusi Li, Xin Shu, Yucheng Feng, Ziqiao Ao
+  version: default
+  description: House price prediction in Perth (located in Western Australia).
+  dependencies: requirements.txt
+  output: artifacts
+  output_config: config/
+  output_data: data/
+
+
+preprocess_dataset:
+  quantile: 0.75
+
+clean_data:
+  outlier:
+    upper_threshold:
+      price: 1500000
+      land_area: 1500
+      nearest_stn_dist: 10000
+      nearest_sch_dist: 4
+    lower_threshold:
+      build_year: 1950
+
+analysis:
+  pairplot_columns: 
+    - PRICE
+    - FLOOR_AREA
+    - BUILD_YEAR
+    - CBD_DIST
+    - NEAREST_STN_DIST
+    - POSTCODE
+    - LATITUDE
+    - LONGITUDE
+    - NEAREST_SCH_DIST
+
+generate_features:
+  other_room_multiplier: 0.25
+
+split_data:
+  test_size: 0.2
+  random_state: 21
+  target: PRICE
+  columns:
+    - SUBURB
+    - BEDROOMS
+    - BATHROOMS
+    - GARAGE
+    - LAND_AREA
+    - FLOOR_AREA
+    - NEAREST_STN
+    - LATITUDE
+    - NEAREST_SCH
+    - OTHERS_ROOMS_AREA
+    - GARAGE_AREA
+    - BATHROOMS_AREA
+    - BEDROOMS_AREA
+
+
+model_tuning:
+  random_forest_hyperparameters:
+    n_estimators: [100]
+    # max_depth: [5, 8]
+    # min_samples_split: [2, 5]
+    # min_samples_leaf: [2, 5]
+
+  xgboost_hyperparameters:
+    learning_rate: [0.01, 0.05, 0.1]
+    # max_depth: [3, 5, 7]
+
+  linear_ridge_hyperparameters:
+    alpha: [0.1, 1.0, 10.0]
+
+  cv: 2
+
+  verbose: 1
+
+  metrics: ["root_mean_squared_error", "mean_absolute_error", "r2_score"]
+
+  best_model_metric: "root_mean_squared_error"
+
+
+model_evaluation:
+  evaluate_model:
+    output: 'model_evaluation.csv'
+  plot_results:
+    hist_figsize: [20, 8]
+    kde_figsize: [20, 8]
+    scatter_figsize: [20, 8]
+    output_dir: 'plots'
+
+
+aws:
+  upload: True
+  bucket_raw: group-3-raw-data
+  bucket_model_artifacts: cloud-classification-models
+  random_forest_model_name: rf_model_object.pkl
+  logistic_regression_model_name: lr_model_object.pkl
+  xgboost_model_name: best_model_object_XGBoost.pkl
+  selected_model_key: best_model_object_XGBoost.pkl
+  selected_preprocessor_key: fitted_preprocessor.pkl

@@ -1,6 +1,6 @@
 run_config:
   name: housing-price-project
-  author: Ziqiao Ao, Yucheng Feng, Jiusi Li, Xin Shu
+  author: Jiusi Li, Xin Shu, Yucheng Feng, Ziqiao Ao
   version: default
   description: House price prediction in Perth (located in Western Australia).
   dependencies: requirements.txt
